@@ -6,6 +6,8 @@ authors = ["Daan Wynen <black.puppydog@gmx.de>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+qbittorrent-api = "^2022.10.39"
+tqdm = "^4.64.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
