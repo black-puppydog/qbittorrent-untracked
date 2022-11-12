@@ -31,6 +31,8 @@ torrent_root_local = Path(args.torrent_root_local)
 
 # instantiate a Client using the appropriate WebUI configuration
 import qbittorrentapi
+from tqdm import tqdm
+
 qbt_client = qbittorrentapi.Client(
     host=args.host,
     port=args.port,
@@ -65,15 +67,26 @@ for torrent_info in all_info:
         tracked_files.add(file_path.relative_to(torrent_root_server).as_posix())
 print(f"{len(tracked_files):7} files currently tracked.", file=sys.stderr)
 
+# for debugging we dump everything once to analyze in ipython
+# import json
+# with open("tracked.json", "w") as f:
+#     json.dump(list(sorted(tracked_files)), f)
+# with open("seen.json", "w") as f:
+#     json.dump(list(sorted(fname.relative_to(torrent_root_local).as_posix() for
+#                    fname in torrent_root_local.glob("**/*") if fname.is_file())), f)
+# sys.exit()
+
 print("Beginning file system scan...", file=sys.stderr)
 print(file=sys.stderr)
 untracked = 0
 total_seen = 0
 for fname in tqdm(torrent_root_local.glob("**/*")):
+    if not fname.is_file():
+        continue
     total_seen += 1
-    relative = fname.relative_to(torrent_root_local)
-    if fname not in tracked_files:
-        print(fname.as_posix())
+    relative = fname.relative_to(torrent_root_local).as_posix()
+    if relative not in tracked_files:
+        tqdm.write(relative)
         untracked += 1
 print(file=sys.stderr)
 print(f"{total_seen:7} files seen locally.", file=sys.stderr)
