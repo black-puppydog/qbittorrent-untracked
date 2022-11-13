@@ -19,7 +19,7 @@ def parse_args():
     parser.add_argument("-u", "--username", default="admin")
     parser.add_argument("--password", default=None)
     parser.add_argument("--torrent-root-local", default=None)
-    parser.add_argument("-x", "--exclude", action="append", type=Path,
+    parser.add_argument("-x", "--exclude", action="append", type=Path, default=list(),
                         help=("Files and folders to ignore when finding untracked "
                               "files. These can be absolute, or relative to the local "
                               "torrent root."))
