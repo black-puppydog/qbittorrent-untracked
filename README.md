@@ -16,3 +16,14 @@ It then shows you all the files or folders that qBittorrent isn't aware of; thes
 should then be moved or deleted.
 
 [at]: https://academictorrents.com/
+
+## Example call:
+
+```terminal
+qbuntracked \
+--host dataset-server.local \         # where you'd open your qBittorrent web UI
+--torrent-root-local /nfs/datasets \  # where you mount your torrents *locally*
+-x torrent_files \                    # exclude folder relative to torrent root
+-x /nfs/datasets/untracked \          # exclude folder with absolute path
+/mnt/pool/datasets                    # mount point of torrent folder on the server
+```

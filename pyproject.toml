@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "qbittorrent-untracked"
-version = "0.1.0"
-description = ""
+version = "0.2.0"
+description = "Checks files tracked by qBittorrent against actual folder content."
 authors = ["Daan Wynen <black.puppydog@gmx.de>"]
+
+[tool.poetry.scripts]
+qbuntracked = 'qbittorrent_untracked.main:main'
 
 [tool.poetry.dependencies]
 python = "^3.10"
