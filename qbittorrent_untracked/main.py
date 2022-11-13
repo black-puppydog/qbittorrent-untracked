@@ -5,6 +5,7 @@ import os
 import sys
 from pathlib import Path
 from pprint import pformat
+from collections import defaultdict
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Checks a folder for files that are currently "
@@ -87,8 +88,22 @@ print(f"{len(tracked_files):7} files currently tracked.", file=sys.stderr)
 
 print("Beginning file system scan...", file=sys.stderr)
 print(file=sys.stderr)
-untracked = 0
+untracked = list()
 total_seen = 0
+
+# this will hold all files as leaves, but also all folders in the local
+# torrent root, and a value for each of them to see whether they only contain only
+# untracked files. for the leaves, this is trivial: it's simply whether that file is
+# tracked or not. for the folders, we build the values as we scan all the files.
+contains_only_untracked_files = defaultdict(lambda: True)
+
+def register_file(filename: Path, tracked: bool):
+  contains_only_untracked_files[filename.as_posix()] = not tracked
+  for folder in filename.parents:
+    contains_only_untracked_files[folder] &= not tracked
+    if folder == args.torrent_root_local:
+      break
+
 for fname in tqdm(args.torrent_root_local.glob("**/*")):
     if any(fname.is_relative_to(e) for e in args.exclude):
         continue
@@ -96,9 +111,29 @@ for fname in tqdm(args.torrent_root_local.glob("**/*")):
         continue
     total_seen += 1
     relative = fname.relative_to(args.torrent_root_local).as_posix()
-    if relative not in tracked_files:
-        tqdm.write(relative)
-        untracked += 1
+    if relative in tracked_files:
+          register_file(fname, tracked=True)
+    else:
+          register_file(fname, tracked=False)
+          # tqdm.write(relative)
+          untracked.append(fname)
 print(file=sys.stderr)
 print(f"{total_seen:7} files seen locally.", file=sys.stderr)
-print(f"{untracked:7} files untracked.", file=sys.stderr)
+print(f"{len(untracked):7} files untracked.", file=sys.stderr)
+
+def highest_untracked_parent(untracked_file: Path) -> Path:
+    current = untracked_file
+    current_contains_only_untracked = contains_only_untracked_files[current]
+    assert current_contains_only_untracked, f"Weird result for {current}"
+    while current != args.torrent_root_local:
+        parent_contains_only_untracked = contains_only_untracked_files[current.parent]
+        if not parent_contains_only_untracked:
+            break
+        current = current.parent
+    return current.relative_to(args.torrent_root_local)
+
+most_specific_files_and_folders = {highest_untracked_parent(filename) for filename
+                                   in untracked}
+
+for name in sorted(most_specific_files_and_folders):
+    print(name)
