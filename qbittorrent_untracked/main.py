@@ -70,24 +70,13 @@ tracked_files = set()
 for torrent_info in all_info:
     torrent_path = Path(torrent_info["save_path"])
     for file_info in torrent_info.files:
-        # if "name" not in file_info:
-        #     print(pformat(dict(torrent_info)), file=sys.stderr)
-        #     print(pformat(dict(file_info)), file=sys.stderr)
         file_path = torrent_path / file_info["name"]
         tracked_files.add(file_path.relative_to(args.torrent_root_server).as_posix())
+
 print(f"{len(tracked_files):7} files currently tracked.", file=sys.stderr)
-
-# for debugging we dump everything once to analyze in ipython
-# import json
-# with open("tracked.json", "w") as f:
-#     json.dump(list(sorted(tracked_files)), f)
-# with open("seen.json", "w") as f:
-#     json.dump(list(sorted(fname.relative_to(args.torrent_root_local).as_posix() for
-#                    fname in args.torrent_root_local.glob("**/*") if fname.is_file())), f)
-# sys.exit()
-
 print("Beginning file system scan...", file=sys.stderr)
 print(file=sys.stderr)
+
 untracked = list()
 total_seen = 0
 
@@ -115,8 +104,8 @@ for fname in tqdm(args.torrent_root_local.glob("**/*")):
           register_file(fname, tracked=True)
     else:
           register_file(fname, tracked=False)
-          # tqdm.write(relative)
           untracked.append(fname)
+
 print(file=sys.stderr)
 print(f"{total_seen:7} files seen locally.", file=sys.stderr)
 print(f"{len(untracked):7} files untracked.", file=sys.stderr)
